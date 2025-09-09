@@ -1,13 +1,9 @@
-# api.py (Definitive Final Version)
-
 import joblib
 import pandas as pd
 from fastapi import FastAPI
 from pydantic import BaseModel
 import numpy as np
 
-
-# --- 1. Define the input data structure ---
 class NetworkData(BaseModel):
     duration: int;
     protocol_type: int;
@@ -52,16 +48,15 @@ class NetworkData(BaseModel):
     dst_host_srv_rerror_rate: float
 
 
-# --- 2. Load trained artifacts ---
-# Change this line in api.py
+#Load trained artifacts
 model = joblib.load("models/final_model.joblib")
 le = joblib.load("models/label_encoder.joblib")
 column_order = joblib.load("models/column_order.joblib")
 
-# --- 3. Create FastAPI app ---
+#Create FastAPI app
 app = FastAPI(title="Intrusion Detection API", version="3.0")
 
-# --- 4. Business logic mapping ---
+#Business logic mapping
 CONFIDENCE_THRESHOLD = 0.95
 LOW_CONF_NORMAL_THRESHOLD = 0.60
 ALERT_MAP = {"Normal": "Normal", "DoS": "Critical Alert - High Volume Attack",
@@ -69,12 +64,11 @@ ALERT_MAP = {"Normal": "Normal", "DoS": "Critical Alert - High Volume Attack",
              "U2R": "CRITICAL - Privilege Escalation Detected"}
 
 
-# --- 5. Prediction endpoint with final logic ---
+#Prediction endpoint with final logic
 @app.post("/predict", tags=["Prediction"])
 def predict(data: NetworkData):
     try:
-        # --- HEURISTIC RULE FOR CLASSIC DoS ATTACK ---
-        # This is a hard-coded safety net for the model's known blind spot.
+        #Heuristic rule for classic dos attack
         if data.serror_rate == 1.0 and data.srv_serror_rate == 1.0 and data.src_bytes == 0:
             return {
                 "status": "Critical Alert - High Volume Attack",
@@ -82,7 +76,7 @@ def predict(data: NetworkData):
                 "confidence": 1.0  # We are 100% confident due to the rule
             }
 
-        # --- If not caught by heuristic, proceed with the AI model ---
+        #If not caught by heuristic, proceed with the AI model
         input_df = pd.DataFrame([data.model_dump()])
         input_df = input_df[column_order]
 
@@ -102,7 +96,7 @@ def predict(data: NetworkData):
         return {"error": str(e)}
 
 
-# --- 6. Health check ---
+#Health check
 @app.get("/", tags=["Health Check"])
 def read_root():
     return {"status": "API is running - Final Version"}
