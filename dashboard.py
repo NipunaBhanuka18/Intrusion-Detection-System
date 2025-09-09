@@ -1,17 +1,15 @@
-# dashboard.py (Final, Smarter Version)
-
 import streamlit as st
 import requests
 import json
 import pandas as pd
 
-# --- Page Configuration ---
+#Page Configuration
 st.set_page_config(page_title="Intrusion Detection System", page_icon="🛡️", layout="wide")
 
-# --- API Endpoint ---
+#API Endpoint
 API_URL = "http://127.0.0.1:8000/predict"
 
-# --- Data Samples (to use as intelligent defaults) ---
+#Data Samples
 normal_traffic_sample = {"duration": 0, "protocol_type": 1, "service": 24, "flag": 9, "src_bytes": 287,
                          "dst_bytes": 2738, "land": 0, "wrong_fragment": 0, "urgent": 0, "hot": 0,
                          "num_failed_logins": 0, "logged_in": 1, "num_compromised": 0, "root_shell": 0,
@@ -34,11 +32,11 @@ dos_attack_sample = {"duration": 0, "protocol_type": 1, "service": 49, "flag": 5
                      "dst_host_srv_diff_host_rate": 0.0, "dst_host_serror_rate": 1.0, "dst_host_srv_serror_rate": 1.0,
                      "dst_host_rerror_rate": 0.0, "dst_host_srv_rerror_rate": 0.0}
 
-# --- Page Title ---
+#Page Title
 st.title("🛡️ Real-Time Intrusion Detection System")
 st.write("Enter network traffic features to predict the attack category.")
 
-# --- Sidebar for User Input ---
+#Sidebar for User Input
 st.sidebar.header("Input Features")
 duration = st.sidebar.number_input("Duration", min_value=0, value=0)
 src_bytes = st.sidebar.number_input("Source Bytes", min_value=0, value=250)
@@ -47,17 +45,13 @@ count = st.sidebar.number_input("Count", min_value=0, value=5)
 serror_rate = st.sidebar.slider("Server Error Rate", 0.0, 1.0, 0.0)
 logged_in = st.sidebar.selectbox("Logged In", [0, 1], index=1)
 
-# --- Prediction Button ---
+#Prediction Button
 if st.sidebar.button("Detect Intrusion"):
-    # --- SMART PAYLOAD LOGIC ---
-    # If the inputs look like a DoS attack, use the DoS sample as the base.
-    # Otherwise, use the Normal sample as the base.
     if serror_rate > 0.9:
         base_payload = dos_attack_sample.copy()
     else:
         base_payload = normal_traffic_sample.copy()
 
-    # Update the base payload with the user's inputs from the sidebar
     payload = base_payload
     payload["duration"] = duration
     payload["src_bytes"] = src_bytes
@@ -66,7 +60,6 @@ if st.sidebar.button("Detect Intrusion"):
     payload["serror_rate"] = serror_rate
     payload["logged_in"] = logged_in
 
-    # Send request to the API
     try:
         response = requests.post(API_URL, data=json.dumps(payload))
         response.raise_for_status()
