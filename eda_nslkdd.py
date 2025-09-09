@@ -1,5 +1,3 @@
-#--------------STAGE 2----------------#
-
 #LOAD DATASET
 import kagglehub
 import pandas as pd
@@ -112,7 +110,7 @@ print()
 print(df_train["service"].value_counts().head(10))
 print()
 
-#(Optional) peek the mapping for protocol_type to explain in slides
+#Peek the mapping for protocol_type to explain in slides
 print("\n[ENCODING] Mapping for protocol_type:", encoders["protocol_type"])
 print()
 
@@ -127,7 +125,7 @@ num_cols = [c for c in df_enc.select_dtypes(include=["int64", "float64"]).column
 print("\n[SCALING] Number of numeric columns to scale:", len(num_cols))
 print()
 
-#Fit scaler (EDA only; later: fit on TRAIN only)
+#Fit scaler 
 scaler = StandardScaler()
 df_enc[num_cols] = scaler.fit_transform(df_enc[num_cols])
 
@@ -155,78 +153,79 @@ out_path = "data/processed/train_clean.csv"
 df_enc.to_csv(out_path, index=False)
 print(f"\n[SAVE] Processed dataset saved to: {out_path}")
 
-# #EXPLORATORY DATA ANALYSIS (EDA) PLOTS
-import matplotlib
-matplotlib.use("Agg")   #non-GUI backend (no Tkinter needed)
-import matplotlib.pyplot as plt
-import seaborn as sns
-import os
+#(University Project Requirements)
+# # #EXPLORATORY DATA ANALYSIS (EDA) PLOTS
+# import matplotlib
+# matplotlib.use("Agg")   #non-GUI backend (no Tkinter needed)
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+# import os
 
-#Ensure figures folder exists
-os.makedirs("reports/figures", exist_ok=True)
+# #Ensure figures folder exists
+# os.makedirs("reports/figures", exist_ok=True)
 
-#1.Binary label balance
-plt.figure(figsize=(6,4))
-df_train["label_binary"].value_counts().plot(kind="bar", color=["skyblue", "salmon"])
-plt.title("Normal vs Attack (Binary Classes)")
-plt.xlabel("Class")
-plt.ylabel("Count")
-plt.xticks([0,1], ["Normal (0)", "Attack (1)"])
-plt.savefig("reports/figures/binary_balance.png")
-plt.close()
+# #1.Binary label balance
+# plt.figure(figsize=(6,4))
+# df_train["label_binary"].value_counts().plot(kind="bar", color=["skyblue", "salmon"])
+# plt.title("Normal vs Attack (Binary Classes)")
+# plt.xlabel("Class")
+# plt.ylabel("Count")
+# plt.xticks([0,1], ["Normal (0)", "Attack (1)"])
+# plt.savefig("reports/figures/binary_balance.png")
+# plt.close()
 
-#2.Multi-class attack category distribution
-plt.figure(figsize=(7,5))
-sns.countplot(x="attack_category", data=df_train,
-              order=df_train["attack_category"].value_counts().index,
-              hue=None, palette="Set2", legend=False)
-plt.title("Attack Category Distribution")
-plt.xlabel("Category")
-plt.ylabel("Count")
-plt.savefig("reports/figures/attack_categories.png")
-plt.close()
+# #2.Multi-class attack category distribution
+# plt.figure(figsize=(7,5))
+# sns.countplot(x="attack_category", data=df_train,
+#               order=df_train["attack_category"].value_counts().index,
+#               hue=None, palette="Set2", legend=False)
+# plt.title("Attack Category Distribution")
+# plt.xlabel("Category")
+# plt.ylabel("Count")
+# plt.savefig("reports/figures/attack_categories.png")
+# plt.close()
 
-#3.Protocol type distribution by class
-plt.figure(figsize=(7,5))
-sns.countplot(x="protocol_type", data=df_train, hue="label_binary", palette="pastel")
-plt.title("Protocol Type by Normal/Attack")
-plt.xlabel("Protocol")
-plt.ylabel("Count")
-plt.legend(title="Label (0=Normal,1=Attack)")
-plt.savefig("reports/figures/protocol_distribution.png")
-plt.close()
+# #3.Protocol type distribution by class
+# plt.figure(figsize=(7,5))
+# sns.countplot(x="protocol_type", data=df_train, hue="label_binary", palette="pastel")
+# plt.title("Protocol Type by Normal/Attack")
+# plt.xlabel("Protocol")
+# plt.ylabel("Count")
+# plt.legend(title="Label (0=Normal,1=Attack)")
+# plt.savefig("reports/figures/protocol_distribution.png")
+# plt.close()
 
-#4.Top-10 services
-top_services = df_train["service"].value_counts().head(10).index
-plt.figure(figsize=(10,5))
-sns.countplot(x="service", data=df_train[df_train["service"].isin(top_services)],
-              order=top_services, hue="label_binary", palette="muted")
-plt.title("Top 10 Services - Normal vs Attack")
-plt.xlabel("Service")
-plt.ylabel("Count")
-plt.legend(title="Label")
-plt.xticks(rotation=45)
-plt.savefig("reports/figures/top10_services.png")
-plt.close()
+# #4.Top-10 services
+# top_services = df_train["service"].value_counts().head(10).index
+# plt.figure(figsize=(10,5))
+# sns.countplot(x="service", data=df_train[df_train["service"].isin(top_services)],
+#               order=top_services, hue="label_binary", palette="muted")
+# plt.title("Top 10 Services - Normal vs Attack")
+# plt.xlabel("Service")
+# plt.ylabel("Count")
+# plt.legend(title="Label")
+# plt.xticks(rotation=45)
+# plt.savefig("reports/figures/top10_services.png")
+# plt.close()
 
-#5.Correlation heatmap (numeric features)
-plt.figure(figsize=(12,10))
-corr = df_enc[num_cols].corr()
-sns.heatmap(corr, cmap="coolwarm", cbar=True)
-plt.title("Feature Correlation Heatmap")
-plt.savefig("reports/figures/corr_heatmap.png")
-plt.close()
+# #5.Correlation heatmap (numeric features)
+# plt.figure(figsize=(12,10))
+# corr = df_enc[num_cols].corr()
+# sns.heatmap(corr, cmap="coolwarm", cbar=True)
+# plt.title("Feature Correlation Heatmap")
+# plt.savefig("reports/figures/corr_heatmap.png")
+# plt.close()
 
-#6.Boxplot example (duration vs attack)
-plt.figure(figsize=(7,5))
-sns.boxplot(x="label_binary", y="duration", data=df_train)
-plt.title("Duration Distribution: Normal vs Attack")
-plt.xlabel("Class (0=Normal,1=Attack)")
-plt.ylabel("Duration")
-plt.savefig("reports/figures/duration_boxplot.png")
-plt.close()
+# #6.Boxplot example (duration vs attack)
+# plt.figure(figsize=(7,5))
+# sns.boxplot(x="label_binary", y="duration", data=df_train)
+# plt.title("Duration Distribution: Normal vs Attack")
+# plt.xlabel("Class (0=Normal,1=Attack)")
+# plt.ylabel("Duration")
+# plt.savefig("reports/figures/duration_boxplot.png")
+# plt.close()
 
-print("\n[EDA] ✅ Plots saved in reports/figures/")
+# print("\n[EDA] Plots saved in reports/figures/")
 
-#----------------Stage 3-------------------#
+
 
